@@ -1,0 +1,37 @@
+
+// This pulls Location
+function getLocations(request,response)	{
+	var itemId = request.getParameter('i');
+	var locationColumns = new Array();
+	locationColumns.push( new nlobjSearchColumn('name') );
+	locationColumns.push( new nlobjSearchColumn('zip') );
+	var locations = nlapiSearchRecord('location',null,null,locationColumns);
+	if( locations )	{
+		for( var i = 0; i < locations.length; i++ )	{
+			var locationId = locations[i].getId();
+			var locationName = locations[i].getValue('name');
+			var locationZip = locations[i].getValue('zip');
+			response.writeLine('addLocationInfo("'+locationName+'", "'+locationZip+'", "9999999");');
+		}
+	}
+}
+// This pulls Credit Card Values
+function afterSubmit(type) {
+	if(type.toLowerCase() == 'create')
+	{
+		 var salesOrderRec = nlapiLoadRecord('salesorder', nlapiGetRecordId());
+		 if(salesOrderRec.getFieldValue('custbody_celigo_ca_order') != null && salesOrderRec.getFieldValue('custbody_celigo_ca_order') != '' && salesOrderRec.getFieldValue('custbody_celigo_ca_order') == 'F' )
+		 	return;
+		 
+		salesOrderRec.setFieldValue('creditcard',null);
+		salesOrderRec.setFieldValue('ccnumber',null);
+		salesOrderRec.setFieldValue('ccexpiredate',null);
+		salesOrderRec.setFieldValue('ccstreet',null);
+		salesOrderRec.setFieldValue('cczipcode',null);
+		salesOrderRec.setFieldValue('ccname',null);
+		salesOrderRec.setFieldValue('paymentmethod',salesOrderRec.getFieldValue('paymentmethod'));
+		
+		 nlapiSubmitRecord(salesOrderRec,true, true);
+		     
+	}
+}

@@ -1,0 +1,41 @@
+/* User Event Script*/
+var ns = $.namespace("Celigo.custom.ctsupply.userevent");
+ns.FieldManager = function(myContext) { 
+
+    ns.FieldManager.superclass.constructor.call(this, myContext);
+
+    setFieldValues = function() { 
+    	var recordId = $$.getRecordId();    	
+    	
+    	if(nlapiLookupField("salesorder", nlapiGetFieldValue('createdfrom'), "custbody_celigo_amazon_order") === 'F')
+    		return;
+    	
+    	var soRecordId = nlapiGetFieldValue("createdfrom");
+    	try{
+    		var custName = nlapiLookupField("salesorder", soRecordId , "shipaddressee");
+    		//var custName = soRecordId.getFieldValue('shipaddressee');
+    		nlapiSetFieldValue("shipcompany", custName);
+    		nlapiSetFieldValue("shipattention", custName);	
+     		$$.logExecution('DEBUG', 'Attention and Addressee fields are set', custName);
+   		}catch(e){
+   			$$.logExecution('DEBUG', "Unable to set Attention and Addressee fields: " +  e.name || e.getCode(), e.message || e.getDetails());
+            $$.logExecution('DEBUG', 'check line', e.lineNumber || e.line);
+            //throw e;
+   		}
+    };
+    
+    this.setFields = function() { 
+    	setFieldValues();
+    }; 
+}; 
+
+ns.FieldManager.extend(Celigo.Runnable); 
+
+ns.FieldManager.prototype = {
+    /*afterSubmit: function(type){ 
+        this.setFields();
+    }*/
+	beforeSubmit: function(type){ 
+        this.setFields();
+    }
+};
